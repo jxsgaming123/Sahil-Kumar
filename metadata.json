@@ -1,0 +1,6 @@
+{
+  "name": "GenerationConnect",
+  "description": "A premium, accessible Material 3 app for kids and seniors. Features include a Kids Zone with drawing canvas, audio moral stories, picture puzzles, and a Senior Mode with medication reminders, daily bhajans/quotes, high-contrast grid layouts, and simplified voice command navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
