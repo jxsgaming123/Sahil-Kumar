@@ -3,15 +3,15 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // --- Senior High-Contrast Palette (WCAG Compliant) ---
-val SeniorBackgroundLight = Color(0xFFF7F9FF) // Bold Typography main background
+val SeniorBackgroundLight = Color(0xFFF2F2F7) // Premium Apple iOS light gray background
 val SeniorSurfaceLight = Color(0xFFFFFFFF)
-val SeniorPrimaryLight = Color(0xFF0061A4) // Active blue
+val SeniorPrimaryLight = Color(0xFF007AFF) // Active Apple Blue
 val SeniorOnPrimaryLight = Color(0xFFFFFFFF)
-val SeniorSecondaryLight = Color(0xFF44474E) // Slate text/secondary
+val SeniorSecondaryLight = Color(0xFF8E8E93) // iOS Gray
 val SeniorOnSecondaryLight = Color(0xFFFFFFFF)
-val SeniorAccentLight = Color(0xFFC2410C)
-val SeniorTextPrimaryLight = Color(0xFF191C1E) // High-contrast header/body text
-val SeniorTextSecondaryLight = Color(0xFF555E71) // Subtext/secondary header
+val SeniorAccentLight = Color(0xFF007AFF)
+val SeniorTextPrimaryLight = Color(0xFF1C1C1E) // High-contrast Apple Black
+val SeniorTextSecondaryLight = Color(0xFF8E8E93) // iOS Gray subtext
 
 // --- Bold Typography Theme Card Backgrounds & Texts ---
 val BoldCardMedicineBg = Color(0xFFD1E4FF)
@@ -51,5 +51,5 @@ val KidsTextPrimary = Color(0xFF2C3E50) // Slate primary text
 val KidsTextSecondary = Color(0xFF7F8C8D) // Muted slate sub-text
 
 // --- Utility Alert Colors ---
-val SOSRed = Color(0xFFD32F2F) // Deep warning red for Emergency SOS
-val SOSPulse = Color(0xFFFF8A80) // Pulse glow color
+val SOSRed = Color(0xFFFF3B30) // Apple System Red
+val SOSPulse = Color(0xFFFF8E8E) // Apple soft red glow

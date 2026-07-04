@@ -56,12 +56,11 @@ private val KidsColorScheme = lightColorScheme(
 @Composable
 fun GenerationConnectTheme(
     isKidsMode: Boolean = false,
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false, // Enforce light mode instead of dark mode
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         isKidsMode -> KidsColorScheme
-        darkTheme -> SeniorDarkColorScheme
         else -> SeniorLightColorScheme
     }
 

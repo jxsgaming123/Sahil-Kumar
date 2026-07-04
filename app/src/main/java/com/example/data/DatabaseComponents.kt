@@ -31,7 +31,7 @@ interface ReminderDao {
     fun getAllReminders(): Flow<List<MedicationReminder>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertReminder(reminder: MedicationReminder)
+    suspend fun insertReminder(reminder: MedicationReminder): Long
 
     @Update
     suspend fun updateReminder(reminder: MedicationReminder)
@@ -68,8 +68,8 @@ abstract class AppDatabase : RoomDatabase() {
 class ReminderRepository(private val reminderDao: ReminderDao) {
     val allReminders: Flow<List<MedicationReminder>> = reminderDao.getAllReminders()
 
-    suspend fun insert(reminder: MedicationReminder) {
-        reminderDao.insertReminder(reminder)
+    suspend fun insert(reminder: MedicationReminder): Long {
+        return reminderDao.insertReminder(reminder)
     }
 
     suspend fun update(reminder: MedicationReminder) {
