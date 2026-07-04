@@ -21,14 +21,15 @@ class AlarmReceiver : BroadcastReceiver() {
         
         Log.d("AlarmReceiver", "Received alarm: type=$type, message=$message")
         
-        showNotification(context, type, message)
+        val id = intent.getIntExtra("id", 0)
+        showNotification(context, type, message, id)
 
         if (type == "hydration") {
             scheduleNextHydrationAlarm(context)
         }
     }
 
-    private fun showNotification(context: Context, type: String, message: String) {
+    private fun showNotification(context: Context, type: String, message: String, id: Int) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "senior_care_alerts"
         val channelName = "SeniorCare Notifications"
@@ -75,7 +76,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val notificationId = when (type) {
             "meditation" -> 101
             "hydration" -> 102
-            else -> 103 + (intent.getIntExtra("id", 0))
+            else -> 103 + id
         }
         notificationManager.notify(notificationId, notification)
     }

@@ -659,8 +659,13 @@ class MainViewModel(
         initMemoryGame()
         initCommunityPosts()
 
-        // Fetch Real-time live weather for Rajpura, Punjab
-        fetchLiveWeatherForRajpura()
+        // Fetch Real-time live weather for Rajpura, Punjab periodically every 3 minutes (180,000 ms)
+        viewModelScope.launch {
+            while (true) {
+                fetchLiveWeatherForRajpura()
+                delay(180000)
+            }
+        }
 
         // Start real-time walking tracker (uses Health Connect when authorized, else falls back to simulation)
         viewModelScope.launch {

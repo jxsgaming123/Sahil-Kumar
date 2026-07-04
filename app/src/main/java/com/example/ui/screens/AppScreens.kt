@@ -97,6 +97,215 @@ private fun makePhoneCall(context: Context, phoneNumber: String) {
     }
 }
 
+@Composable
+fun AnimatedSplashScreen(onFinished: () -> Unit) {
+    var progress by remember { mutableStateOf(0f) }
+    var startTextAnimation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        startTextAnimation = true
+        val duration = 2200
+        val startTime = System.currentTimeMillis()
+        while (System.currentTimeMillis() - startTime < duration) {
+            val elapsed = System.currentTimeMillis() - startTime
+            progress = (elapsed.toFloat() / duration).coerceIn(0f, 1f)
+            delay(16)
+        }
+        progress = 1f
+        delay(300)
+        onFinished()
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "splash_pulse")
+
+    val pulseScale1 by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseScale1"
+    )
+    val pulseAlpha1 by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 0.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseAlpha1"
+    )
+
+    val pulseScale2 by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, delayMillis = 400, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseScale2"
+    )
+    val pulseAlpha2 by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 0.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, delayMillis = 400, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulseAlpha2"
+    )
+
+    val logoPulseScale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logoPulseScale"
+    )
+
+    val textAlpha by animateFloatAsState(
+        targetValue = if (startTextAnimation) 1f else 0f,
+        animationSpec = tween(1000, easing = EaseInOut),
+        label = "textAlpha"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFFFF0E5), // Soft warm peach center
+                        Color(0xFFFFF7EE), // Gentle cream inner
+                        Color(0xFFFDE9D9)  // Deepest elegant cream edge
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Box(
+                modifier = Modifier.size(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Outer Pulse 1 (Warm Orange Aura)
+                Box(
+                    modifier = Modifier
+                        .size(130.dp)
+                        .graphicsLayer {
+                            scaleX = pulseScale1
+                            scaleY = pulseScale1
+                            alpha = pulseAlpha1
+                        }
+                        .background(Color(0xFFFF9500).copy(alpha = 0.4f), CircleShape)
+                )
+
+                // Outer Pulse 2 (Soft Blue Aura)
+                Box(
+                    modifier = Modifier
+                        .size(130.dp)
+                        .graphicsLayer {
+                            scaleX = pulseScale2
+                            scaleY = pulseScale2
+                            alpha = pulseAlpha2
+                        }
+                        .background(Color(0xFF007AFF).copy(alpha = 0.25f), CircleShape)
+                )
+
+                // Beautiful logo mask
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .scale(logoPulseScale)
+                        .shadow(12.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = com.example.R.drawable.img_app_icon_1783154433908),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // App Name
+            Text(
+                text = "GenerationConnect",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF1C1C1E),
+                modifier = Modifier.graphicsLayer { alpha = textAlpha }
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Beautiful sub-text
+            Text(
+                text = "Bridging generations with care and love",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF007AFF),
+                modifier = Modifier.graphicsLayer { alpha = textAlpha }
+            )
+
+            Spacer(modifier = Modifier.height(60.dp))
+
+            // Loading details and percentage
+            Row(
+                modifier = Modifier.width(220.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = "Connecting...",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "${(progress * 100).toInt()}%",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFFFF9500)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Elegant loading bar with rounded border
+            Box(
+                modifier = Modifier
+                    .width(220.dp)
+                    .height(8.dp)
+                    .background(Color(0xFFE5E5EA), RoundedCornerShape(4.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(progress)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF007AFF), Color(0xFFFF9500))
+                            ),
+                            RoundedCornerShape(4.dp)
+                        )
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
@@ -118,6 +327,7 @@ fun AppNavigation(
     val weatherEmoji by viewModel.weatherEmoji.collectAsStateWithLifecycle()
     val seniorName by viewModel.seniorName.collectAsStateWithLifecycle()
 
+    var isSplashLoading by remember { mutableStateOf(true) }
     var currentScreen by remember { mutableStateOf("home") }
 
     LaunchedEffect(sosCountdown, sosActive) {
@@ -135,7 +345,9 @@ fun AppNavigation(
         )
     }
 
-    if (!isOnboardingCompleted) {
+    if (isSplashLoading) {
+        AnimatedSplashScreen(onFinished = { isSplashLoading = false })
+    } else if (!isOnboardingCompleted) {
         OnboardingScreen(viewModel = viewModel)
     } else {
         Scaffold(
@@ -255,69 +467,160 @@ fun AppNavigation(
             )
         },
         floatingActionButton = {
-            // Siri aura pulsing animation
+            // Siri aura pulsing and swirling animation
             val infiniteTransition = rememberInfiniteTransition(label = "siri_pulse")
-            val pulseScale1 by infiniteTransition.animateFloat(
-                initialValue = 1.0f,
-                targetValue = 1.45f,
+            
+            val rotation by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(1400, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    animation = tween(4000, easing = LinearEasing),
                     repeatMode = RepeatMode.Restart
                 ),
-                label = "scale1"
-            )
-            val pulseAlpha1 by infiniteTransition.animateFloat(
-                initialValue = 0.6f,
-                targetValue = 0.0f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1400, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "alpha1"
+                label = "rotation"
             )
 
-            val pulseScale2 by infiniteTransition.animateFloat(
+            val waveScale1 by infiniteTransition.animateFloat(
                 initialValue = 1.0f,
                 targetValue = 1.7f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(1400, delayMillis = 400, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    animation = tween(1500, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                     repeatMode = RepeatMode.Restart
                 ),
-                label = "scale2"
+                label = "waveScale1"
             )
-            val pulseAlpha2 by infiniteTransition.animateFloat(
-                initialValue = 0.4f,
+            val waveAlpha1 by infiniteTransition.animateFloat(
+                initialValue = 0.75f,
                 targetValue = 0.0f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(1400, delayMillis = 400, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    animation = tween(1500, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                     repeatMode = RepeatMode.Restart
                 ),
-                label = "alpha2"
+                label = "waveAlpha1"
+            )
+
+            val waveScale2 by infiniteTransition.animateFloat(
+                initialValue = 1.0f,
+                targetValue = 1.45f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1300, delayMillis = 300, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "waveScale2"
+            )
+            val waveAlpha2 by infiniteTransition.animateFloat(
+                initialValue = 0.6f,
+                targetValue = 0.0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1300, delayMillis = 300, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "waveAlpha2"
+            )
+
+            val waveScale3 by infiniteTransition.animateFloat(
+                initialValue = 1.0f,
+                targetValue = 1.25f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, delayMillis = 150, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "waveScale3"
+            )
+            val waveAlpha3 by infiniteTransition.animateFloat(
+                initialValue = 0.85f,
+                targetValue = 0.0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, delayMillis = 150, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "waveAlpha3"
+            )
+
+            val basePulseScale by infiniteTransition.animateFloat(
+                initialValue = 1.03f,
+                targetValue = 1.12f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2200, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "basePulseScale"
+            )
+
+            val siriGradient = Brush.sweepGradient(
+                colors = listOf(
+                    Color(0xFF007AFF), // Siri Blue
+                    Color(0xFF5856D6), // Siri Purple
+                    Color(0xFFFF2D55), // Siri Red
+                    Color(0xFFFF9500), // Siri Orange
+                    Color(0xFF34C759), // Siri Green
+                    Color(0xFF007AFF)  // Wrapping
+                )
             )
 
             Box(contentAlignment = Alignment.Center) {
                 if (isListening) {
-                    // Outer aura 2
+                    // Swirling base aura
                     Box(
                         modifier = Modifier
                             .size(80.dp)
+                            .scale(basePulseScale)
                             .graphicsLayer {
-                                scaleX = pulseScale2
-                                scaleY = pulseScale2
-                                alpha = pulseAlpha2
+                                rotationZ = rotation
+                                alpha = 0.45f
                             }
-                            .background(Color(0xFFFF3B30), CircleShape)
+                            .background(siriGradient, CircleShape)
                     )
-                    // Outer aura 1
+
+                    // Pulsing Wave 1 (Deep Pink-Red & Purple)
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .graphicsLayer {
-                                scaleX = pulseScale1
-                                scaleY = pulseScale1
-                                alpha = pulseAlpha1
+                                scaleX = waveScale1
+                                scaleY = waveScale1
+                                alpha = waveAlpha1
                             }
-                            .background(Color(0xFFFF3B30), CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(Color(0xFFFF2D55), Color(0xFF5856D6), Color.Transparent)
+                                ),
+                                CircleShape
+                            )
+                    )
+
+                    // Pulsing Wave 2 (Siri Blue & Cyan)
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .graphicsLayer {
+                                scaleX = waveScale2
+                                scaleY = waveScale2
+                                alpha = waveAlpha2
+                            }
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(Color(0xFF007AFF), Color(0xFF5AC8FA), Color.Transparent)
+                                ),
+                                CircleShape
+                            )
+                    )
+
+                    // Pulsing Wave 3 (Siri Orange & Coral)
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .graphicsLayer {
+                                scaleX = waveScale3
+                                scaleY = waveScale3
+                                alpha = waveAlpha3
+                            }
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(Color(0xFFFF9500), Color(0xFFFF2D55), Color.Transparent)
+                                ),
+                                CircleShape
+                            )
                     )
                 }
 
@@ -408,37 +711,37 @@ fun HomeScreen(
     isKidsMode: Boolean,
     onNavigate: (String) -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    if (isKidsMode) {
+        val configuration = LocalConfiguration.current
+        val isTablet = configuration.screenWidthDp >= 600
 
-    val isHCSupported = remember { viewModel.isHealthConnectAvailable() }
-    val permissionsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
-    ) { grantedPermissions ->
-        if (grantedPermissions.containsAll(viewModel.getRequiredPermissions())) {
+        val isHCSupported = remember { viewModel.isHealthConnectAvailable() }
+        val permissionsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+        ) { grantedPermissions ->
+            if (grantedPermissions.containsAll(viewModel.getRequiredPermissions())) {
+                viewModel.fetchHealthConnectSteps()
+            }
+        }
+
+        val triggerPermissionRequest = {
+            permissionsLauncher.launch(viewModel.getRequiredPermissions())
+        }
+
+        LaunchedEffect(Unit) {
             viewModel.fetchHealthConnectSteps()
         }
-    }
 
-    val triggerPermissionRequest = {
-        permissionsLauncher.launch(viewModel.getRequiredPermissions())
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchHealthConnectSteps()
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // 1. Theme Header (Mode switcher toggle pill & Avatar or Premium Profile Header)
-        item {
-            if (isKidsMode) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 1. Theme Header (Mode switcher toggle pill)
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -446,7 +749,6 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Kids Mode Header Title
                     Text(
                         text = "🎈 Kids Play Zone",
                         fontSize = 28.sp,
@@ -465,352 +767,51 @@ fun HomeScreen(
                         Text("👵", fontSize = 20.sp)
                     }
                 }
-            } else {
-                // PREMIUM APPLE STYLE PROFILE HEADER CARD (COMPLETELY REPLACES ZONE SWITCHERS)
-                val name by viewModel.seniorName.collectAsStateWithLifecycle()
-                val age by viewModel.seniorAge.collectAsStateWithLifecycle()
-                val bloodGroup by viewModel.seniorBloodGroup.collectAsStateWithLifecycle()
-                
+            }
+
+            // 2. Greeting
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "Hello, Kiddo!",
+                        style = MaterialTheme.typography.displayLarge,
+                        color = Color(0xFF191C1E)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    val sdf = SimpleDateFormat("EEEE, MMMM dd", Locale.getDefault())
+                    Text(
+                        text = "It's ${sdf.format(Date())}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFF555E71),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            // 3. Daily Care & Serenity Banner
+            item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onNavigate("profile_caregiver") }
-                        .shadow(elevation = 3.dp, shape = RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Apple style elegant avatar with high-contrast text
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE2F1FF)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = name.take(1).uppercase(),
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFF0061A4)
-                            )
-                        }
-                        
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = name,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF191C1E)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Age: $age Yrs",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF555E71)
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .size(4.dp)
-                                        .background(Color(0xFF555E71), CircleShape)
-                                )
-                                Text(
-                                    text = "Blood: $bloodGroup",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFBA1A1A)
-                                )
-                            }
-                        }
-                        
-                        // Edit profile / view indicator icon
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = "View Profile",
-                            tint = Color(0xFF555E71),
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        // 2. Big bold heading section matching mockup h1 text-[34px]
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = if (isKidsMode) "Hello, Kiddo!" else "Hello, Dad",
-                    style = MaterialTheme.typography.displayLarge,
-                    color = Color(0xFF191C1E)
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                val sdf = SimpleDateFormat("EEEE, MMMM dd", Locale.getDefault())
-                Text(
-                    text = "It's ${sdf.format(Date())}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFF555E71),
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        // 3. Daily Care & Serenity Banner (Premium Soft Gradient Card)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp))
-                    .clickable {
-                        if (!isKidsMode) onNavigate("daily_care_serenity")
-                    },
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (isKidsMode) {
-                                Brush.linearGradient(
-                                    colors = listOf(Color(0xFFFFE5EC), Color(0xFFE8F0FE))
-                                )
-                            } else {
-                                Brush.linearGradient(
-                                    colors = listOf(Color(0xFFFFF0F2), Color(0xFFFFF7EE))
-                                )
-                            }
-                        )
-                        .padding(24.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = if (isKidsMode) "🎈 Play & Learn" else "🌸 Daily Care & Serenity",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1C1C1E)
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = if (isKidsMode) "Fun stories, puzzles & drawing" else "Daily wellness suggestions, steps, tasks & breathing exercises",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF8E8E93)
-                            )
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .background(Color.White.copy(alpha = 0.8f), CircleShape)
-                                .shadow(1.dp, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (isKidsMode) "🎯" else "🧘",
-                                fontSize = 32.sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // 4. Voice Action panel matching Apple card style
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp))
-                    .border(1.dp, Color(0x0F000000), RoundedCornerShape(20.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(50.dp)
-                            .background(Color(0xFFE2F1FF), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎙️",
-                            fontSize = 26.sp
-                        )
-                    }
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "VOICE ACTION",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.5.sp,
-                            color = Color(0xFF007AFF) // System Blue
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (isKidsMode) "Say \"Kahani Sunao\" or \"Game\"" else "Say \"Dawa\" or \"Bhajan\"",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1C1C1E) // Charcoal Black
-                        )
-                    }
-                }
-            }
-        }
-
-        if (!isKidsMode) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp))
-                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFFFFE5EC), Color(0xFFE8F0FE))
+                                )
+                            )
+                            .padding(24.dp)
                     ) {
-                        Text(
-                            text = "📞 QUICK DIAL (त्वरित कॉल)",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = Color(0xFF1C1C1E) // Charcoal
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            val context = LocalContext.current
-                            val emergencyContact by viewModel.seniorEmergencyContact.collectAsStateWithLifecycle()
-
-                            // Call Son button
-                            OutlinedButton(
-                                onClick = { 
-                                    viewModel.speakText("[hi]बेटा को फ़ोन मिलाया जा रहा है।")
-                                    makePhoneCall(context, emergencyContact)
-                                },
-                                border = BorderStroke(1.5.dp, Color(0xFF007AFF).copy(alpha = 0.3f)),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color(0xFF007AFF)
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(54.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text("👨‍💼", fontSize = 20.sp)
-                                    Text(
-                                        text = "Call Son",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF007AFF)
-                                    )
-                                }
-                            }
-
-                            // Emergency Button
-                            OutlinedButton(
-                                onClick = { 
-                                    viewModel.speakText("[hi]आपातकालीन नंबर पर कॉल किया जा रहा है।")
-                                    makePhoneCall(context, "112")
-                                },
-                                border = BorderStroke(1.5.dp, Color(0xFFFF3B30).copy(alpha = 0.3f)),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color(0xFFFF3B30)
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(54.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text("🚨", fontSize = 20.sp)
-                                    Text(
-                                        text = "Emergency",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFFF3B30)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Steps & Hydration Panel
-            item {
-                val dailySteps by viewModel.dailySteps.collectAsStateWithLifecycle()
-                val stepGoal by viewModel.stepGoal.collectAsStateWithLifecycle()
-                val waterGlasses by viewModel.waterGlasses.collectAsStateWithLifecycle()
-                val waterGoal by viewModel.waterGoal.collectAsStateWithLifecycle()
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp))
-                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = "🏃‍♂️ WELLBEING & HEALTH (स्वास्थ्य)",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = Color(0xFF1C1C1E) // Charcoal
-                        )
-
-                        // Steps Section
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -818,109 +819,89 @@ fun HomeScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "🚶‍♂️ Walks Tracker",
-                                    fontSize = 16.sp,
+                                    text = "🎈 Play & Learn",
+                                    fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1C1C1E)
                                 )
+                                Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "$dailySteps / $stepGoal steps logged",
+                                    text = "Fun stories, puzzles & drawing",
                                     fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
                                     color = Color(0xFF8E8E93)
                                 )
                             }
                             
-                            // Health Connect sensor sync trigger badge
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isHCSupported) Color(0xFFE2F1FF) else Color(0xFFE8F5E9))
-                                    .clickable {
-                                        if (isHCSupported) {
-                                            triggerPermissionRequest()
-                                        }
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .size(64.dp)
+                                    .background(Color.White.copy(alpha = 0.8f), CircleShape)
+                                    .shadow(1.dp, CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .background(
-                                                if (isHCSupported) Color(0xFF007AFF) else Color(0xFF4CAF50),
-                                                CircleShape
-                                            )
-                                    )
-                                    Text(
-                                        text = if (isHCSupported) "CONNECT SENSORS" else "LIVE ACTIVE",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = if (isHCSupported) Color(0xFF007AFF) else Color(0xFF2E7D32)
-                                    )
-                                }
-                            }
-                        }
-
-                        HorizontalDivider(color = Color(0xFFEEEEEE))
-
-                        // Water Section
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "💧 Hydration Tracker",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1C1C1E)
+                                    text = "🎯",
+                                    fontSize = 32.sp
                                 )
-                                Text(
-                                    text = "$waterGlasses / $waterGoal glasses",
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF8E8E93)
-                                )
-                            }
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                OutlinedButton(
-                                    onClick = { viewModel.decrementWater() },
-                                    border = BorderStroke(1.dp, Color(0xFFE1E2EC)),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color(0xFF1C1C1E)
-                                    ),
-                                    modifier = Modifier.size(44.dp),
-                                    contentPadding = PaddingValues(0.dp),
-                                    shape = CircleShape
-                                ) {
-                                    Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Button(
-                                    onClick = { viewModel.incrementWater() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
-                                    modifier = Modifier.size(44.dp),
-                                    contentPadding = PaddingValues(0.dp),
-                                    shape = CircleShape
-                                ) {
-                                    Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // 5. Feature Grid Cards
-        item {
-            if (isKidsMode) {
-                // Kids Grid Layout
+            // 4. Voice Action Card
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 1.dp, shape = RoundedCornerShape(20.dp))
+                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(20.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(Color(0xFFE2F1FF), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎙️",
+                                fontSize = 26.sp
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "VOICE ACTION",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.5.sp,
+                                color = Color(0xFF007AFF)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Say \"Kahani Sunao\" or \"Game\"",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1C1C1E)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 5. Kids Grid Layout
+            item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -958,175 +939,931 @@ fun HomeScreen(
                         isKids = true
                     )
                 }
-            } else {
-                // Seniors High Contrast layout
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+        }
+    } else {
+        SeniorModeDashboard(viewModel = viewModel, onNavigate = onNavigate)
+    }
+}
+
+@Composable
+fun SeniorModeDashboard(
+    viewModel: MainViewModel,
+    onNavigate: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val isHCSupported = remember { viewModel.isHealthConnectAvailable() }
+    val permissionsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+    ) { grantedPermissions ->
+        if (grantedPermissions.containsAll(viewModel.getRequiredPermissions())) {
+            viewModel.fetchHealthConnectSteps()
+        }
+    }
+    val triggerPermissionRequest = {
+        permissionsLauncher.launch(viewModel.getRequiredPermissions())
+    }
+
+    val seniorName by viewModel.seniorName.collectAsStateWithLifecycle()
+    val weatherTemp by viewModel.weatherTemp.collectAsStateWithLifecycle()
+    val weatherEmoji by viewModel.weatherEmoji.collectAsStateWithLifecycle()
+    val dailySteps by viewModel.dailySteps.collectAsStateWithLifecycle()
+    val stepGoal by viewModel.stepGoal.collectAsStateWithLifecycle()
+    val waterGlasses by viewModel.waterGlasses.collectAsStateWithLifecycle()
+    val waterGoal by viewModel.waterGoal.collectAsStateWithLifecycle()
+    val emergencyContact by viewModel.seniorEmergencyContact.collectAsStateWithLifecycle()
+
+    val weekdays = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    val weekdaysShort = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    
+    val currentCalendar = Calendar.getInstance()
+    val currentDayIndex = when (currentCalendar.get(Calendar.DAY_OF_WEEK)) {
+        Calendar.MONDAY -> 0
+        Calendar.TUESDAY -> 1
+        Calendar.WEDNESDAY -> 2
+        Calendar.THURSDAY -> 3
+        Calendar.FRIDAY -> 4
+        Calendar.SATURDAY -> 5
+        Calendar.SUNDAY -> 6
+        else -> 1
+    }
+    
+    var selectedDayIndex by remember { mutableStateOf(currentDayIndex) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F8FA)),
+        contentPadding = PaddingValues(bottom = 120.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 1. Weekday selector slider + Weather Header
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(vertical = 12.dp)
+            ) {
+                // Weather & Name Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // EMERGENCY SOS RED BUTTON - MATCHING CALL FOR HELP MOCKUP CARD
-                    Card(
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Rajpura, PB $weatherEmoji",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFF9500)
+                        )
+                        Text(
+                            text = weatherTemp,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFFF9500)
+                        )
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.toggleMode() },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(Color(0xFFFFF0EE), CircleShape)
+                        ) {
+                            Text("🎈", fontSize = 16.sp)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE2F1FF))
+                                .clickable { onNavigate("profile_caregiver") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (seniorName.takeIf { it.isNotEmpty() } ?: "D").take(1).uppercase(),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF0061A4)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Horizontal Days list
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    weekdays.forEachIndexed { index, dayName ->
+                        val isSelected = index == selectedDayIndex
+                        val isToday = index == currentDayIndex
+                        
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(
+                                    if (isSelected) Color(0xFFFF9500) else Color(0xFFF0F1F4)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isToday && !isSelected) Color(0xFFFF9500) else Color.Transparent,
+                                    shape = RoundedCornerShape(24.dp)
+                                )
+                                .clickable { selectedDayIndex = index }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = weekdaysShort[index],
+                                    fontSize = 14.sp,
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                                    color = if (isSelected) Color.White else Color(0xFF555E71)
+                                )
+                                if (isToday) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(5.dp)
+                                            .background(
+                                                if (isSelected) Color.White else Color(0xFFFF9500),
+                                                CircleShape
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Personalized h1 Greeting
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "Welcome back, $seniorName!",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF1C1C1E),
+                    lineHeight = 36.sp
+                )
+                Text(
+                    text = "Let's complete your routine steps and daily goals.",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF8E8E93)
+                )
+            }
+        }
+
+        // 3. Orange Peach Gradient Compliance Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .shadow(12.dp, RoundedCornerShape(32.dp)),
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFFF9500), Color(0xFFFF5252))
+                            )
+                        )
+                        .padding(24.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Daily Milestones",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White.copy(alpha = 0.85f),
+                                letterSpacing = 1.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            
+                            Text(
+                                text = "4 Routine Goals done! You are a masterpiece.",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                lineHeight = 26.sp
+                            )
+                            
+                            Spacer(modifier = Modifier.height(28.dp))
+                            
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .height(36.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .align(Alignment.BottomStart)
+                                        .background(Color.White.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.65f)
+                                        .height(8.dp)
+                                        .align(Alignment.BottomStart)
+                                        .background(Color.White, RoundedCornerShape(4.dp))
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopStart)
+                                        .padding(start = 100.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.White)
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = "65%",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color(0xFFFF5252)
+                                    )
+                                }
+                            }
+                        }
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White.copy(alpha = 0.2f))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "DAY 99",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .shadow(4.dp, RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "DAY 100",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFFF5252)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White.copy(alpha = 0.2f))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "DAY 101",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. White elevated pill button below card: "+ Add Medication / Goal"
+        item {
+            Button(
+                onClick = { onNavigate("senior_meds") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFFE5E5EA)),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp)
+                    .height(50.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Goal",
+                        tint = Color(0xFFFF9500),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Add Medicine Alarm / Goal",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1C1C1E)
+                    )
+                }
+            }
+        }
+
+        // 5. Category Slider
+        item {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "CATEGORIES",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.sp,
+                    color = Color(0xFF8E8E93),
+                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CategoryItem(
+                        title = "View All",
+                        emoji = "📋",
+                        bgColor = Color(0xFFFFF7CC),
+                        tintColor = Color(0xFFE6B800),
+                        onClick = { onNavigate("keeps_smiling") }
+                    )
+                    CategoryItem(
+                        title = "Alarms",
+                        emoji = "💊",
+                        bgColor = Color(0xFFE2F1FF),
+                        tintColor = Color(0xFF007AFF),
+                        onClick = { onNavigate("senior_meds") }
+                    )
+                    CategoryItem(
+                        title = "Bhajans",
+                        emoji = "🎼",
+                        bgColor = Color(0xFFFFF0E5),
+                        tintColor = Color(0xFFFF9500),
+                        onClick = { onNavigate("senior_bhajans") }
+                    )
+                    CategoryItem(
+                        title = "Companion",
+                        emoji = "❤️",
+                        bgColor = Color(0xFFFDE5FF),
+                        tintColor = Color(0xFFBF5AF2),
+                        onClick = { onNavigate("senior_companion") }
+                    )
+                    CategoryItem(
+                        title = "Dr. Scan",
+                        emoji = "📄",
+                        bgColor = Color(0xFFE2FBE9),
+                        tintColor = Color(0xFF30D158),
+                        onClick = { onNavigate("senior_prescription") }
+                    )
+                    CategoryItem(
+                        title = "Brain Play",
+                        emoji = "🧠",
+                        bgColor = Color(0xFFE2F9FF),
+                        tintColor = Color(0xFF5AC8FA),
+                        onClick = { onNavigate("daily_games") }
+                    )
+                }
+            }
+        }
+
+        // 6. Beautiful Reminder Section
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Text(
+                    text = "Reminder",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF1C1C1E)
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    ReminderMockCard(
+                        tag = "DAY 68",
+                        tagColor = Color(0xFF34C759),
+                        title = "Jogging in Manahan",
+                        subtitle = "Morning brisk walk & light cardio",
+                        timeRange = "07:00 AM - 08:00 AM",
+                        emoji = "🚶‍♂️"
+                    )
+
+                    ReminderMockCard(
+                        tag = "DAY 10",
+                        tagColor = Color(0xFF5AC8FA),
+                        title = "Read Pages 128-138",
+                        subtitle = "Bhagavad Gita or spiritual text",
+                        timeRange = "12:00 PM - 12:30 PM",
+                        emoji = "📖"
+                    )
+
+                    ReminderMockCard(
+                        tag = "DAILY",
+                        tagColor = Color(0xFFFF9500),
+                        title = "Take Thyroid Medicine",
+                        subtitle = "1 Pill empty stomach with water",
+                        timeRange = "08:30 AM - 08:45 AM",
+                        emoji = "💊"
+                    )
+
+                    ReminderMockCard(
+                        tag = "EVENING",
+                        tagColor = Color(0xFFBF5AF2),
+                        title = "Peaceful Bhajan Chants",
+                        subtitle = "Relaxation & deep breathing",
+                        timeRange = "06:00 PM - 06:30 PM",
+                        emoji = "🙏"
+                    )
+                }
+            }
+        }
+
+        // 7. Quick Actions, Health Trackers & Original Capabilities
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                HorizontalDivider(color = Color(0xFFE5E5EA))
+                
+                Text(
+                    text = "QUICK ACTIONS",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.sp,
+                    color = Color(0xFF8E8E93)
+                )
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(24.dp))
+                        .clickable { viewModel.triggerSOS() }
+                        .testTag("sos_button"),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFDAD6)),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(elevation = 2.dp, shape = RoundedCornerShape(32.dp))
-                            .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(32.dp))
-                            .clickable { viewModel.triggerSOS() }
-                            .testTag("sos_button"),
-                        colors = CardDefaults.cardColors(containerColor = BoldCardHelpBg),
-                        shape = RoundedCornerShape(32.dp)
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "🚨 EMERGENCY SOS (मदद)",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFBA1A1A)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Tap to call family helpers and play alert alarm",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF410002).copy(alpha = 0.8f)
+                            )
+                        }
+                        Text(
+                            text = "🆘",
+                            fontSize = 36.sp,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(2.dp, RoundedCornerShape(24.dp))
+                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(24.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
+                                .size(46.dp)
+                                .background(Color(0xFFE2F1FF), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "🎙️", fontSize = 22.sp)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "VOICE ACTION",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.5.sp,
+                                color = Color(0xFF007AFF)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Say \"Dawa\" or \"Bhajan\"",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1C1C1E)
+                            )
+                        }
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(2.dp, RoundedCornerShape(24.dp))
+                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(24.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = "📞 QUICK DIAL (त्वरित कॉल)",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 1.sp,
+                            color = Color(0xFF1C1C1E)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { 
+                                    viewModel.speakText("[hi]बेटा को फ़ोन मिलाया जा रहा है।")
+                                    makePhoneCall(context, emergencyContact)
+                                },
+                                border = BorderStroke(1.5.dp, Color(0xFF007AFF).copy(alpha = 0.3f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF007AFF)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text("👨‍💼", fontSize = 18.sp)
+                                    Text(
+                                        text = "Call Son",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF007AFF)
+                                    )
+                                }
+                            }
+
+                            OutlinedButton(
+                                onClick = { 
+                                    viewModel.speakText("[hi]आपातकालीन नंबर पर कॉल किया जा रहा है।")
+                                    makePhoneCall(context, "112")
+                                },
+                                border = BorderStroke(1.5.dp, Color(0xFFFF3B30).copy(alpha = 0.3f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF3B30)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text("🚨", fontSize = 18.sp)
+                                    Text(
+                                        text = "112 Emergency",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFF3B30)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(2.dp, RoundedCornerShape(24.dp))
+                        .border(1.dp, Color(0x0F000000), RoundedCornerShape(24.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "🏃‍♂️ WELLBEING & HEALTH (स्वास्थ्य)",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 1.sp,
+                            color = Color(0xFF1C1C1E)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "🚨 EMERGENCY SOS (मदद)",
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFFBA1A1A),
-                                    lineHeight = 30.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Tap to call helpers & sound loud voice alarm",
+                                    text = "🚶‍♂️ Walks Tracker",
                                     fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = BoldCardHelpText.copy(alpha = 0.9f)
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1C1C1E)
+                                )
+                                Text(
+                                    text = "$dailySteps / $stepGoal steps logged",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF8E8E93)
                                 )
                             }
-                            Text(
-                                text = "🆘",
-                                fontSize = 48.sp,
-                                modifier = Modifier.padding(start = 12.dp)
-                            )
+                            
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (isHCSupported) Color(0xFFE2F1FF) else Color(0xFFE8F5E9))
+                                    .clickable {
+                                        if (isHCSupported) {
+                                            triggerPermissionRequest()
+                                        }
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .background(
+                                                if (isHCSupported) Color(0xFF007AFF) else Color(0xFF4CAF50),
+                                                CircleShape
+                                            )
+                                    )
+                                    Text(
+                                        text = if (isHCSupported) "CONNECT SENSORS" else "LIVE ACTIVE",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = if (isHCSupported) Color(0xFF007AFF) else Color(0xFF2E7D32)
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = Color(0xFFEEEEEE))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "💧 Hydration Tracker",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1C1C1E)
+                                )
+                                Text(
+                                    text = "$waterGlasses / $waterGoal glasses",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF8E8E93)
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.decrementWater() },
+                                    border = BorderStroke(1.dp, Color(0xFFE1E2EC)),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1C1C1E)),
+                                    modifier = Modifier.size(40.dp),
+                                    contentPadding = PaddingValues(0.dp),
+                                    shape = CircleShape
+                                ) {
+                                    Text("-", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Button(
+                                    onClick = { viewModel.incrementWater() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
+                                    modifier = Modifier.size(40.dp),
+                                    contentPadding = PaddingValues(0.dp),
+                                    shape = CircleShape
+                                ) {
+                                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                }
+                            }
                         }
                     }
-
-                    // Medication Reminders Row
-                    FeatureCard(
-                        title = "💊 MEDICATION ALARMS",
-                        description = "Add daily medicine timings. Alarms will read aloud when it's time!",
-                        color = MaterialTheme.colorScheme.primary,
-                        emoji = "⏰",
-                        onClick = { onNavigate("senior_meds") },
-                        isKids = false
-                    )
-
-                    // Peaceful Bhajans Card
-                    FeatureCard(
-                        title = "🌸 SOOTHING BHAJANS",
-                        description = "Listen to Gayatri Mantra, Ram Dhyan & peaceful chants.",
-                        color = MaterialTheme.colorScheme.secondary,
-                        emoji = "🎼",
-                        onClick = { onNavigate("senior_bhajans") },
-                        isKids = false
-                    )
-
-                    // Bolne Wala Prescription - "Dr. Ki Awaaz" Card
-                    FeatureCard(
-                        title = "📄 DR. KI AWAAZ (प्रिस्क्रिप्शन)",
-                        description = "Scan doctor's handwritten prescriptions. Reads out medicines in English, Hindi, or Punjabi!",
-                        color = Color(0xFFA5D6A7),
-                        emoji = "🗣️",
-                        onClick = { onNavigate("senior_prescription") },
-                        isKids = false
-                    )
-
-                    // Buzurgon Ka Sahil Card
-                    FeatureCard(
-                        title = "🤝 BUZURGON KA SAHIL (साथी)",
-                        description = "Feeling lonely? Chat with your friendly companion Sahil. Speaks comforting words and stories!",
-                        color = Color(0xFFCE93D8),
-                        emoji = "❤️",
-                        onClick = { onNavigate("senior_companion") },
-                        isKids = false
-                    )
-
-                    // Shor Sharaba Meter Card
-                    FeatureCard(
-                        title = "🔊 SHOR SHARABA METER (शोर मीटर)",
-                        description = "Measure room decibels. Generate formal noise complaints for local bodies using Gemini!",
-                        color = Color(0xFF80DEEA),
-                        emoji = "📣",
-                        onClick = { onNavigate("shor_sharaba") },
-                        isKids = false
-                    )
-
-                    // Daily Brain Games Card
-                    FeatureCard(
-                        title = "🧠 DAILY BRAIN GAMES (खेल)",
-                        description = "Play high-contrast memory games, puzzles & trivia to keep mentally active!",
-                        color = Color(0xFFFFB74D),
-                        emoji = "🦁",
-                        onClick = { onNavigate("daily_games") },
-                        isKids = false
-                    )
-
-                    // Community Corner Card
-                    FeatureCard(
-                        title = "💬 COMMUNITY CORNER (चौपाल)",
-                        description = "Voice-enabled social feed & peaceful audio rooms to chat with peers!",
-                        color = Color(0xFFBA68C8),
-                        emoji = "🗣️",
-                        onClick = { onNavigate("community_corner") },
-                        isKids = false
-                    )
                 }
             }
         }
+    }
+}
 
-        // Live Date & Time / Dynamic Card for Weather & Wellbeing (Cohesive secondary card)
-        if (!isKidsMode) {
-            item {
-                Card(
+@Composable
+fun CategoryItem(
+    title: String,
+    emoji: String,
+    bgColor: Color,
+    tintColor: Color,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .width(72.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .shadow(elevation = 2.dp, shape = CircleShape)
+                .background(bgColor, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = emoji, fontSize = 28.sp)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = title,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1C1C1E),
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun ReminderMockCard(
+    tag: String,
+    tagColor: Color,
+    title: String,
+    subtitle: String,
+    timeRange: String,
+    emoji: String
+) {
+    Card(
+        modifier = Modifier
+            .width(220.dp)
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(32.dp))
-                        .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(32.dp))
-                        .clickable { onNavigate("keeps_smiling") },
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEEF0)), // Soft warm laughing color shade
-                    shape = RoundedCornerShape(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(tagColor.copy(alpha = 0.15f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Keep smiling. (हँसते रहिए)",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1A1C1E)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Tap to read & hear fun Hindi jokes!",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF1A1C1E).copy(alpha = 0.7f)
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.SentimentVerySatisfied,
-                            contentDescription = "Jokes",
-                            tint = Color(0xFFE91E63),
-                            modifier = Modifier.size(44.dp)
-                        )
-                    }
+                    Text(
+                        text = tag,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        color = tagColor
+                    )
                 }
-            }
-        }
 
-        // Spacer for bottom voice FAB overlap protection
-        item {
-            Spacer(modifier = Modifier.height(100.dp))
+                Text(text = emoji, fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1C1C1E),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = subtitle,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF8E8E93),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = "Time",
+                    tint = Color(0xFF8E8E93),
+                    modifier = Modifier.size(13.dp)
+                )
+                Text(
+                    text = timeRange,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF8E8E93)
+                )
+            }
         }
     }
 }
@@ -2745,31 +3482,170 @@ fun VoiceOverlayPanel(
                 Divider()
 
                 if (isListening) {
-                    // Pulsing microphone ring
-                    val infiniteTransition = rememberInfiniteTransition(label = "pulse_mic")
-                    val pulseScale by infiniteTransition.animateFloat(
-                        initialValue = 0.9f,
-                        targetValue = 1.3f,
+                    // Siri-like waves for Dialog Voice Popup
+                    val infiniteTransition = rememberInfiniteTransition(label = "pulse_mic_popup")
+                    
+                    val rotation by infiniteTransition.animateFloat(
+                        initialValue = 0f,
+                        targetValue = 360f,
                         animationSpec = infiniteRepeatable(
-                            animation = tween(800, easing = LinearEasing),
+                            animation = tween(4000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "rotation"
+                    )
+
+                    val waveScale1 by infiniteTransition.animateFloat(
+                        initialValue = 1.0f,
+                        targetValue = 1.7f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1500, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveScale1"
+                    )
+                    val waveAlpha1 by infiniteTransition.animateFloat(
+                        initialValue = 0.75f,
+                        targetValue = 0.0f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1500, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveAlpha1"
+                    )
+
+                    val waveScale2 by infiniteTransition.animateFloat(
+                        initialValue = 1.0f,
+                        targetValue = 1.45f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1300, delayMillis = 300, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveScale2"
+                    )
+                    val waveAlpha2 by infiniteTransition.animateFloat(
+                        initialValue = 0.6f,
+                        targetValue = 0.0f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1300, delayMillis = 300, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveAlpha2"
+                    )
+
+                    val waveScale3 by infiniteTransition.animateFloat(
+                        initialValue = 1.0f,
+                        targetValue = 1.25f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000, delayMillis = 150, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveScale3"
+                    )
+                    val waveAlpha3 by infiniteTransition.animateFloat(
+                        initialValue = 0.85f,
+                        targetValue = 0.0f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000, delayMillis = 150, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "waveAlpha3"
+                    )
+
+                    val basePulseScale by infiniteTransition.animateFloat(
+                        initialValue = 1.03f,
+                        targetValue = 1.12f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(2200, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                             repeatMode = RepeatMode.Reverse
                         ),
-                        label = "scale"
+                        label = "basePulseScale"
+                    )
+
+                    val siriGradient = Brush.sweepGradient(
+                        colors = listOf(
+                            Color(0xFF007AFF), // Siri Blue
+                            Color(0xFF5856D6), // Siri Purple
+                            Color(0xFFFF2D55), // Siri Red
+                            Color(0xFFFF9500), // Siri Orange
+                            Color(0xFF34C759), // Siri Green
+                            Color(0xFF007AFF)  // Wrapping
+                        )
                     )
 
                     Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .scale(pulseScale)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                        modifier = Modifier.size(120.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        // Swirling base aura
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .scale(basePulseScale)
+                                .graphicsLayer {
+                                    rotationZ = rotation
+                                    alpha = 0.45f
+                                }
+                                .background(siriGradient, CircleShape)
+                        )
+
+                        // Pulsing Wave 1 (Deep Pink-Red & Purple)
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .graphicsLayer {
+                                    scaleX = waveScale1
+                                    scaleY = waveScale1
+                                    alpha = waveAlpha1
+                                }
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color(0xFFFF2D55), Color(0xFF5856D6), Color.Transparent)
+                                    ),
+                                    CircleShape
+                                )
+                        )
+
+                        // Pulsing Wave 2 (Siri Blue & Cyan)
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .graphicsLayer {
+                                    scaleX = waveScale2
+                                    scaleY = waveScale2
+                                    alpha = waveAlpha2
+                                }
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color(0xFF007AFF), Color(0xFF5AC8FA), Color.Transparent)
+                                    ),
+                                    CircleShape
+                                )
+                        )
+
+                        // Pulsing Wave 3 (Siri Orange & Coral)
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .graphicsLayer {
+                                    scaleX = waveScale3
+                                    scaleY = waveScale3
+                                    alpha = waveAlpha3
+                                }
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color(0xFFFF9500), Color(0xFFFF2D55), Color.Transparent)
+                                    ),
+                                    CircleShape
+                                )
+                        )
+
+                        // Central microphone core button
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
+                                .background(Color(0xFFFF3B30)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
